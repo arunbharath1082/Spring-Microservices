@@ -8,6 +8,7 @@ import com.arun.employee_service.model.Employee;
 import com.arun.employee_service.repository.EmployeeRepository;
 import com.arun.employee_service.service.ApiClient;
 import com.arun.employee_service.service.EmployeeService;
+import io.github.resilience4j.circuitbreaker.annotation.CircuitBreaker;
 import lombok.AllArgsConstructor;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -20,9 +21,9 @@ public class EmployeeServiceImpl implements EmployeeService {
 
     private EmployeeRepository employeeRepository;
 
-//    private WebClient webClient;
+    private WebClient webClient;
 
-    private ApiClient apiClient;
+//    private ApiClient apiClient;
     public EmployeeDto saveEmployee(EmployeeDto employeeDto) {
         Employee employee = EmployeeMapper.mapToEmployee(employeeDto);
         employee = employeeRepository.save(employee);
@@ -30,21 +31,39 @@ public class EmployeeServiceImpl implements EmployeeService {
     }
 
     @Override
+    @CircuitBreaker(name = "departmentService", fallbackMethod = "getEmployeeFallback")
     public ApiResponseDto getEmployee(Long id) {
         Employee employee = employeeRepository.findById(id).orElse(null);
         if(employee == null){
             return null;
         }
-//        DepartmentDto departmentDto=webClient.get()
-//                .uri("http://localhost:8081/api/departments/"+employee.getDepartmentCode())
-//                .retrieve()
-//                .bodyToMono(DepartmentDto.class)
-//                .block();
-        DepartmentDto departmentDto=apiClient.getDepartment(employee.getDepartmentCode());
+        DepartmentDto departmentDto=webClient.get()
+                .uri("http://localhost:8081/api/departments/"+employee.getDepartmentCode())
+                .retrieve()
+                .bodyToMono(DepartmentDto.class)
+                .block();
+//        DepartmentDto departmentDto=apiClient.getDepartment(employee.getDepartmentCode());
 
         ApiResponseDto apiResponseDto=new ApiResponseDto();
         apiResponseDto.setEmployee(EmployeeMapper.mapToEmployeeDto(employee));
         apiResponseDto.setDepartment(departmentDto);
         return apiResponseDto;
+    }
+    public ApiResponseDto getEmployeeFallback(Long id,Exception exception){
+
+        Employee employee = employeeRepository.findById(id).orElse(null);
+        if(employee == null){
+            return null;
+        }
+        DepartmentDto departmentDto=new DepartmentDto();
+        departmentDto.setDepartmentCode("resilience4j");
+        departmentDto.setDepartmentName("resilience4j");
+        departmentDto.setDepartmentDescription("resilience4j");
+
+        ApiResponseDto apiResponseDto=new ApiResponseDto();
+        apiResponseDto.setEmployee(EmployeeMapper.mapToEmployeeDto(employee));
+        apiResponseDto.setDepartment(departmentDto);
+        return apiResponseDto;
+
     }
 }

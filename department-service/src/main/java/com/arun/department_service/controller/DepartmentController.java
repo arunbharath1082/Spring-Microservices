@@ -2,7 +2,10 @@ package com.arun.department_service.controller;
 
 import com.arun.department_service.dto.DepartmentDto;
 import com.arun.department_service.service.DepartmentService;
+import jakarta.inject.Inject;
 import lombok.AllArgsConstructor;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.context.annotation.Configuration;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;

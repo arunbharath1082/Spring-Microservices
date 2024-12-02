@@ -13,10 +13,10 @@ public class EmployeeServiceApplication {
 	// Create a bean for WebClient
 	// This bean is used to make calls to other services
 	// This is a non-blocking, reactive client for performing HTTP requests
-//		@Bean
-//		public WebClient webclient(){
-//			return WebClient.builder().build();
-//		}
+		@Bean
+		public WebClient webclient(){
+			return WebClient.builder().build();
+		}
 
 
 
