@@ -3,6 +3,7 @@ package com.arun.employee_service.service.impl;
 import com.arun.employee_service.dto.ApiResponseDto;
 import com.arun.employee_service.dto.DepartmentDto;
 import com.arun.employee_service.dto.EmployeeDto;
+import com.arun.employee_service.dto.OrganizationDto;
 import com.arun.employee_service.mapper.EmployeeMapper;
 import com.arun.employee_service.model.Employee;
 import com.arun.employee_service.repository.EmployeeRepository;
@@ -44,9 +45,16 @@ public class EmployeeServiceImpl implements EmployeeService {
                 .block();
 //        DepartmentDto departmentDto=apiClient.getDepartment(employee.getDepartmentCode());
 
+        OrganizationDto organizationDto=webClient.get()
+                .uri("http://localhost:8091/api/organizations/"+employee.getOrganizationCode())
+                .retrieve()
+                .bodyToMono(OrganizationDto.class)
+                .block();
+
         ApiResponseDto apiResponseDto=new ApiResponseDto();
         apiResponseDto.setEmployee(EmployeeMapper.mapToEmployeeDto(employee));
         apiResponseDto.setDepartment(departmentDto);
+        apiResponseDto.setOrganization(organizationDto);
         return apiResponseDto;
     }
     public ApiResponseDto getEmployeeFallback(Long id,Exception exception){
